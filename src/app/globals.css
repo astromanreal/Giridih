@@ -1,0 +1,178 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Define light mode variables directly in :root */
+@layer base {
+  :root {
+    /* Default Theme - Light Mode (Fallback/Initial) */
+    --background: 40 33% 97%; /* Light Sand/Off-white ~ #FCFBF9 */
+    --foreground: 210 15% 25%; /* Deep Blue-Gray ~ #363D47 */
+    --card: 0 0% 100%; /* White card for contrast */
+    --card-foreground: 210 15% 25%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 15% 25%;
+    --primary: 175 60% 40%; /* Teal ~ #29998D */
+    --primary-foreground: 0 0% 100%; /* White */
+    --secondary: 30 40% 75%; /* Warm Sandstone ~ #D9BFA6 */
+    --secondary-foreground: 210 15% 25%; /* Deep Blue-Gray */
+    --muted: 40 33% 92%; /* Very Light Sand ~ #F1EDE9 */
+    --muted-foreground: 210 10% 50%; /* Medium Blue-Gray ~ #78808A */
+    --accent: 45 100% 60%; /* Sunny Yellow ~ #FFD633 */
+    --accent-foreground: 210 15% 25%; /* Deep Blue-Gray */
+    --destructive: 0 84.2% 60.2%; /* Default Red */
+    --destructive-foreground: 0 0% 98%; /* Default White */
+    --border: 30 30% 85%; /* Light Sandstone Border ~ #E1D8CE */
+    --input: 30 30% 85%;
+    --ring: 175 60% 40%; /* Primary Teal for focus rings */
+
+    --chart-1: 175 60% 40%; /* Teal */
+    --chart-2: 30 40% 75%; /* Sandstone */
+    --chart-3: 45 100% 60%; /* Yellow */
+    --chart-4: 210 15% 50%; /* Medium Blue-Gray */
+    --chart-5: 15 80% 65%; /* Coral (complementary) */
+
+    --radius: 0.5rem;
+
+    /* Sidebar variables will now use the main theme variables */
+    --sidebar-background: var(--muted); /* Example: Use main muted */
+    --sidebar-foreground: var(--foreground);
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-accent: hsl(var(--background) / 0.8); /* Example: Slightly transparent background */
+    --sidebar-accent-foreground: var(--primary);
+    --sidebar-border: var(--border);
+    --sidebar-ring: var(--ring);
+  }
+
+  /* Define dark mode variables within the .dark selector */
+  /* These will be overridden by JS if a specific color theme is selected */
+  .dark {
+    /* Default Theme - Dark Mode (Fallback/Initial) */
+    --background: 210 15% 10%; /* Very Dark Blue-Gray ~ #15171A */
+    --foreground: 40 33% 92%; /* Light Sand ~ #F1EDE9 */
+    --card: 210 15% 15%; /* Dark Blue-Gray Card ~ #1F2329 */
+    --card-foreground: 40 33% 92%;
+    --popover: 210 15% 10%;
+    --popover-foreground: 40 33% 92%;
+    --primary: 175 55% 50%; /* Brighter Teal ~ #39B3A7 */
+    --primary-foreground: 210 15% 10%; /* Darkest Blue-Gray */
+    --secondary: 30 15% 50%; /* Medium Gray-Brown ~ #8C7B6A */
+    --secondary-foreground: 40 33% 92%; /* Light Sand */
+    --muted: 210 15% 20%; /* Dark Muted Blue-Gray ~ #292E36 */
+    --muted-foreground: 210 10% 65%; /* Medium Gray ~ #9DA3AC */
+    --accent: 45 90% 65%; /* Brighter Yellow ~ #FFE052 */
+    --accent-foreground: 210 15% 10%; /* Darkest Blue-Gray */
+    --destructive: 0 62.8% 30.6%; /* Default Dark Red */
+    --destructive-foreground: 0 0% 98%; /* Default White */
+    --border: 210 15% 25%; /* Dark Blue-Gray Border ~ #363D47 */
+    --input: 210 15% 25%;
+    --ring: 175 55% 50%; /* Primary Brighter Teal */
+
+    --chart-1: 175 55% 50%; /* Brighter Teal */
+    --chart-2: 30 15% 50%; /* Gray-Brown */
+    --chart-3: 45 90% 65%; /* Brighter Yellow */
+    --chart-4: 210 10% 65%; /* Medium Gray */
+    --chart-5: 15 70% 70%; /* Lighter Coral */
+
+     /* Sidebar variables will now use the main theme variables */
+     /* These values reflect the 'default dark' theme */
+    --sidebar-background: var(--card); /* Use main dark card */
+    --sidebar-foreground: var(--foreground);
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-accent: hsl(var(--muted) / 0.8); /* Slightly transparent muted */
+    --sidebar-accent-foreground: var(--primary);
+    --sidebar-border: var(--border);
+    --sidebar-ring: var(--ring);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* Base font size applied via JS in settings */
+  }
+
+  /* Apply font size classes directly */
+  body.text-sm {
+    font-size: 0.875rem; /* Tailwind's text-sm */
+    line-height: 1.25rem;
+  }
+  body.text-base {
+    font-size: 1rem; /* Tailwind's text-base */
+    line-height: 1.5rem;
+  }
+  body.text-lg {
+    font-size: 1.125rem; /* Tailwind's text-lg */
+    line-height: 1.75rem;
+  }
+
+  /* Ensure components using text utilities inherit correctly */
+   .prose {
+      @apply text-foreground; /* Ensure prose text uses theme color */
+   }
+   .prose-sm {
+      font-size: inherit; /* Let body class control base size */
+   }
+   .prose-lg {
+      font-size: inherit;
+   }
+   /* Add more specific overrides if needed */
+}
+
+/* Apply sidebar variables using CSS variables defined in :root/.dark */
+@layer components {
+    [data-sidebar="sidebar"] {
+        background-color: hsl(var(--sidebar-background));
+        color: hsl(var(--sidebar-foreground));
+        border-color: hsl(var(--sidebar-border));
+    }
+    [data-sidebar="menu-button"]:hover,
+    [data-sidebar="menu-sub-button"]:hover,
+    [data-sidebar="menu-button"][data-state="open"], /* Added for open state */
+    [data-sidebar="group-action"]:hover {
+        background-color: hsl(var(--sidebar-accent));
+        color: hsl(var(--sidebar-accent-foreground));
+    }
+    [data-sidebar="menu-button"][data-active="true"] {
+         background-color: hsl(var(--sidebar-accent)); /* Use accent for active */
+         color: hsl(var(--sidebar-accent-foreground));
+    }
+     [data-sidebar="menu-sub-button"][data-active="true"] {
+         background-color: hsl(var(--sidebar-accent));
+         color: hsl(var(--sidebar-accent-foreground));
+    }
+
+    [data-sidebar="menu-button"]:focus-visible,
+    [data-sidebar="menu-sub-button"]:focus-visible,
+    [data-sidebar="group-action"]:focus-visible,
+    [data-sidebar="input"]:focus-visible {
+         outline-color: hsl(var(--sidebar-ring));
+         outline-offset: 2px;
+         outline-style: solid;
+         outline-width: 2px;
+    }
+
+     [data-sidebar="separator"] {
+       background-color: hsl(var(--sidebar-border));
+     }
+
+     [data-sidebar="group-label"] {
+         color: hsl(var(--sidebar-foreground) / 0.7);
+     }
+
+     /* Ensure tooltips use popover styles */
+     .tooltip-content {
+        background-color: hsl(var(--popover));
+        color: hsl(var(--popover-foreground));
+        border-color: hsl(var(--border));
+     }
+}
