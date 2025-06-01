@@ -1,20 +1,20 @@
 
 import { notFound } from 'next/navigation';
-import Image from 'next/image';
-import { getBlogPostBySlug, getBlogPosts } from '@/app/blogs/page'; // Import functions to get blog data
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { getBlogPostBySlug, getBlogPosts } from '@/app/blogs/page'; 
+import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, CalendarDays, User } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import type { Metadata, ResolvingMetadata } from 'next';
+import { generateSeoMetaTags } from '@/ai/flows/generate-seo-meta-flow';
 
-// Define params type for TypeScript
+
 type BlogPostPageProps = {
   params: {
     slug: string;
   };
 };
 
-// Function to generate static paths for blog posts
 export async function generateStaticParams() {
   const posts = getBlogPosts();
   return posts.map((post) => ({
@@ -22,19 +22,131 @@ export async function generateStaticParams() {
   }));
 }
 
-// The actual blog post page component
+
+export async function generateMetadata(
+  { params }: BlogPostPageProps,
+  parentResolvingMetadata: ResolvingMetadata
+): Promise<Metadata> {
+  const { slug } = params;
+  const post = getBlogPostBySlug(slug);
+
+  if (!post) {
+    return {
+      title: 'Blog Post Not Found',
+      description: 'The blog post you are looking for does not exist.',
+    };
+  }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com';
+  const canonicalUrl = `${siteUrl}/blogs/${slug}`;
+  const previousImages = (await parentResolvingMetadata).openGraph?.images || [];
+
+  try {
+    const plainTextContent = post.content.replace(/<[^>]*>?/gm, ' ').substring(0, 500);
+    const contentSummary = post.excerpt || plainTextContent;
+
+    const seoInput = {
+      title: post.title,
+      contentSummary: contentSummary,
+      contentType: 'blog post',
+    };
+
+    const seoData = await generateSeoMetaTags(seoInput);
+    
+    // Since post.image is removed from data, we only include previousImages if they exist
+    const openGraphImages = previousImages.length > 0 ? previousImages : undefined;
+    const twitterImages = previousImages.length > 0 ? previousImages.map(img => typeof img === 'string' ? img : img.url) : undefined;
+
+
+    return {
+      title: seoData.seoTitle,
+      description: seoData.metaDescription,
+      keywords: seoData.keywords,
+      alternates: { 
+        canonical: canonicalUrl,
+      },
+      openGraph: {
+        title: seoData.seoTitle,
+        description: seoData.metaDescription,
+        type: 'article',
+        publishedTime: post.date,
+        authors: [post.author],
+        url: canonicalUrl,
+        images: openGraphImages,
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: seoData.seoTitle,
+        description: seoData.metaDescription,
+        images: twitterImages,
+      },
+    };
+  } catch (error) {
+    let errorMessage = 'Unknown error during SEO metadata generation';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    } else if (error && typeof error === 'object' && 'toString' in error) {
+      errorMessage = error.toString();
+    }
+    console.error(`AI SEO Metadata Generation Error for blog ${slug}: ${errorMessage}`, error);
+    const openGraphImages = previousImages.length > 0 ? previousImages : undefined;
+    return {
+      title: post.title,
+      description: post.excerpt,
+      alternates: { canonical: canonicalUrl },
+      openGraph: {
+        title: post.title,
+        description: post.excerpt,
+        images: openGraphImages,
+      },
+    };
+  }
+}
+
+
 export default function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = params;
   const post = getBlogPostBySlug(slug);
 
-  // If post not found, return 404
   if (!post) {
     notFound();
   }
+  
+  const siteUrl = typeof window !== 'undefined' ? window.origin : (process.env.NEXT_PUBLIC_SITE_URL || '');
+  const canonicalUrl = siteUrl ? `${siteUrl}/blogs/${slug}` : `/blogs/${slug}`;
+
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    // image removed as post.image is no longer available
+    author: {
+      '@type': 'Person',
+      name: post.author,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Giridih Explorer', 
+      logo: {
+        '@type': 'ImageObject',
+        url: `${siteUrl}/logo.png`, 
+        dataAiHint: 'logo site'
+      },
+    },
+    datePublished: post.date,
+    dateModified: post.date, 
+    description: post.excerpt,
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': canonicalUrl,
+    },
+  };
 
   return (
     <article className="max-w-4xl mx-auto space-y-8">
-       {/* Back Button */}
         <Button variant="outline" size="sm" asChild className="mb-4">
             <Link href="/blogs">
                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -42,7 +154,6 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
             </Link>
         </Button>
 
-      {/* Post Header */}
       <header className="space-y-4">
         <h1 className="text-3xl md:text-4xl font-bold leading-tight text-foreground">
           {post.title}
@@ -65,34 +176,31 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
         </div>
       </header>
 
-      {/* Featured Image */}
+      {/* Image component removed as post.image is no longer available in data */}
+      {/* 
       <div className="relative h-64 md:h-96 w-full overflow-hidden rounded-lg shadow-lg">
         <Image
-          src={post.image}
+          src={post.image} // This would cause an error if post.image is undefined
           alt={post.title}
           layout="fill"
           objectFit="cover"
-          priority // Prioritize loading the main image
-          data-ai-hint={post.dataAiHint}
+          priority 
+          data-ai-hint={post.dataAiHint || 'blog post image'} // post.dataAiHint also not in data
         />
-         {/* Subtle overlay */}
          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
       </div>
+      */}
 
-      {/* Post Content */}
-      <Card className="shadow-none border-none"> {/* Removing Card styling for seamless content flow */}
-        <CardContent className="prose prose-sm sm:prose lg:prose-lg dark:prose-invert max-w-none p-0 mt-6">
-          {/* Use dangerouslySetInnerHTML to render the HTML content */}
-          {/* Ensure the source of this HTML is trusted or sanitized */}
+      <Card className="shadow-none border-none mt-8"> 
+        <CardContent className="prose prose-sm sm:prose lg:prose-lg dark:prose-invert max-w-none p-0">
           <div dangerouslySetInnerHTML={{ __html: post.content }} />
         </CardContent>
       </Card>
 
-      {/* Optional: Author Bio or Related Posts section */}
-      {/* <footer className="mt-12 border-t border-border pt-8">
-        <h3 className="text-xl font-semibold mb-4">About the Author</h3>
-        <p className="text-muted-foreground">...</p>
-      </footer> */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
     </article>
   );
 }

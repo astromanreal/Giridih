@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -6,61 +7,57 @@ import { getWeatherAction, type WeatherData } from '@/actions/weather';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { Wind, Droplets, MapPin, HelpCircle, AlertTriangle, CloudOff } from 'lucide-react'; // Import HelpCircle instead of CloudQuestion
+import { Wind, Droplets, MapPin, HelpCircle, AlertTriangle, CloudOff, CalendarClock } from 'lucide-react';
 
 // Dynamically get Lucide icon component by name
 const getIconComponent = (iconName: string): React.ComponentType<LucideIcons.LucideProps> => {
-  // Use a type assertion here
   const IconComponent = LucideIcons[iconName as keyof typeof LucideIcons] as React.ComponentType<LucideIcons.LucideProps>;
-  return IconComponent || HelpCircle; // Fallback icon changed to HelpCircle
+  return IconComponent || HelpCircle;
 };
 
 export function WeatherInfo() {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdatedTime, setLastUpdatedTime] = useState<string | null>(null); // State for client-side time
+  const [lastUpdatedTime, setLastUpdatedTime] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchWeather = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await getWeatherAction(); // Call the server action
+        const data = await getWeatherAction();
         setWeatherData(data);
-        // Set time only after data is fetched and component is mounted
-        setLastUpdatedTime(new Date().toLocaleTimeString());
+        setLastUpdatedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
       } catch (err) {
          console.error("Error fetching weather:", err);
-        setError('Failed to fetch weather data.'); // Set error message
-        setLastUpdatedTime(new Date().toLocaleTimeString()); // Also set time on error
+        setError('Failed to fetch weather data.');
+        setLastUpdatedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchWeather();
-     // Optional: Refresh weather every 30 minutes
      const intervalId = setInterval(fetchWeather, 30 * 60 * 1000);
      return () => clearInterval(intervalId);
   }, []);
 
-   // Effect to update time periodically without re-fetching (optional)
    useEffect(() => {
        const timeUpdateInterval = setInterval(() => {
-           if (!isLoading && !error && weatherData) { // Only update time if not loading and data exists
-              setLastUpdatedTime(new Date().toLocaleTimeString());
+           if (!isLoading && !error && weatherData) {
+              setLastUpdatedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
            }
-       }, 60000); // Update every minute
+       }, 60000);
        return () => clearInterval(timeUpdateInterval);
-   }, [isLoading, error, weatherData]); // Re-run if loading state or data changes
+   }, [isLoading, error, weatherData]);
 
 
   const WeatherIcon = useMemo(() => {
     if (weatherData?.icon) {
       return getIconComponent(weatherData.icon);
     }
-    return HelpCircle; // Default fallback changed to HelpCircle
+    return HelpCircle;
   }, [weatherData?.icon]);
 
   const renderContent = () => {
@@ -95,65 +92,77 @@ export function WeatherInfo() {
       <div className="flex items-center space-x-1">
         <WeatherIcon className="h-5 w-5 text-primary" />
         <span className="text-sm font-medium">{weatherData.temp}°C</span>
-        {/* Optional: Add location to the trigger button if space allows */}
-        {/* <span className="text-xs text-muted-foreground hidden sm:inline">in {weatherData.location}</span> */}
       </div>
     );
   };
 
 
   const renderPopoverContent = () => {
-    // Display loading state for time until it's ready
     const displayTime = (isLoading && !error) || !lastUpdatedTime ? <Skeleton className="h-3 w-16 inline-block" /> : lastUpdatedTime;
-    const timeLabel = error ? "Last checked:" : "Last updated:";
+    const timeLabel = error ? "Checked:" : "Updated:";
 
     if (isLoading) {
       return (
-         <div className="p-4 space-y-2">
+         <div className="p-6 space-y-3">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-8 w-40" />
             <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-3 w-16" />
-            <Skeleton className="h-3 w-20" />
-            <p className="text-xs text-muted-foreground pt-2">{timeLabel} {displayTime}</p>
+            <Skeleton className="h-4 w-28" />
+            <p className="text-xs text-muted-foreground/80 pt-3 flex items-center">
+              <CalendarClock className="h-3 w-3 mr-1.5" /> {timeLabel} {displayTime}
+            </p>
           </div>
       );
     }
      if (error) {
       return (
-         <div className="p-4 text-sm text-destructive">
+         <div className="p-6 text-sm text-destructive/90">
              {error}
-             <p className="text-xs text-muted-foreground pt-2">{timeLabel} {displayTime}</p>
+             <p className="text-xs text-muted-foreground/80 pt-3 flex items-center">
+                <CalendarClock className="h-3 w-3 mr-1.5" /> {timeLabel} {displayTime}
+             </p>
          </div>
         );
     }
      if (!weatherData) {
        return (
-         <div className="p-4 text-sm text-muted-foreground">
+         <div className="p-6 text-sm text-muted-foreground/90">
             Weather data unavailable.
-            <p className="text-xs text-muted-foreground pt-2">{timeLabel} {displayTime}</p>
+            <p className="text-xs text-muted-foreground/80 pt-3 flex items-center">
+                <CalendarClock className="h-3 w-3 mr-1.5" /> {timeLabel} {displayTime}
+            </p>
          </div>
         );
      }
 
      return (
-       <div className="p-4 space-y-2">
-         <div className="flex items-center gap-2 font-semibold">
-            <MapPin className="h-4 w-4 text-secondary"/> {weatherData.location}
+       <div className="p-6 space-y-4 text-sm">
+         <div className="flex items-center gap-2.5">
+            <MapPin className="h-5 w-5 text-primary/90 shrink-0"/>
+            <span className="font-semibold text-lg text-foreground">{weatherData.location}</span>
          </div>
-         <div className="flex items-center gap-2 text-lg">
-           <WeatherIcon className="h-6 w-6 text-primary" />
-           <span>{weatherData.temp}°C, {weatherData.description}</span>
-         </div>
-         <div className="text-sm text-muted-foreground space-y-1">
-           <div className="flex items-center gap-2">
-             <Droplets className="h-4 w-4" /> Humidity: {weatherData.humidity}%
-           </div>
-           <div className="flex items-center gap-2">
-             <Wind className="h-4 w-4" /> Wind: {weatherData.windSpeed} km/h
+
+         <div className="flex items-center gap-3 my-3">
+           <WeatherIcon className="h-12 w-12 text-accent shrink-0" />
+           <div className="flex flex-col">
+             <span className="text-3xl font-bold text-foreground">{weatherData.temp}°C</span>
+             <span className="text-sm text-muted-foreground capitalize">{weatherData.description}</span>
            </div>
          </div>
-         {/* Render time only when available */}
-         <p className="text-xs text-muted-foreground pt-2">
-            {timeLabel} {displayTime}
+
+        <div className="space-y-2 pt-2 border-t border-border/50">
+            <div className="flex items-center gap-2.5 text-muted-foreground">
+                <Droplets className="h-5 w-5 text-blue-400 shrink-0" />
+                <span>Humidity: <span className="font-medium text-foreground/90">{weatherData.humidity}%</span></span>
+            </div>
+            <div className="flex items-center gap-2.5 text-muted-foreground">
+                <Wind className="h-5 w-5 text-sky-400 shrink-0" />
+                <span>Wind: <span className="font-medium text-foreground/90">{weatherData.windSpeed} km/h</span></span>
+            </div>
+        </div>
+
+         <p className="text-xs text-muted-foreground/80 pt-3 flex items-center">
+           <CalendarClock className="h-3 w-3 mr-1.5" /> {timeLabel} {displayTime}
          </p>
        </div>
      );
@@ -166,7 +175,10 @@ export function WeatherInfo() {
            {renderContent()}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto" align="end">
+      <PopoverContent
+        className="w-auto min-w-[280px] bg-gradient-to-br from-card via-background to-background/80 dark:from-popover dark:via-background/90 dark:to-background/70 border-border/70 shadow-2xl backdrop-blur-md"
+        align="end"
+      >
         {renderPopoverContent()}
       </PopoverContent>
     </Popover>

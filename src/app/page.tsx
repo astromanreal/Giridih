@@ -1,26 +1,24 @@
 
-
-'use client'; // Required for useRef, useState, useEffect
-
 import Image from 'next/image';
 import Link from 'next/link';
-import * as React from 'react'; // Import React
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Search, MapPin, Globe, Users, Languages, Milestone, User, Info, LibrarySquare, LayoutGrid, Building2, BookOpen, Briefcase, Pyramid, GalleryHorizontalEnd, MessageSquare } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowRight, MapPin, Users, Languages, Milestone, User, Info, LayoutGrid, Building2, BookOpen, Briefcase, Pyramid, GalleryHorizontalEnd, MessageSquare, Home as HomeIcon } from 'lucide-react';
+import type { Metadata, ResolvingMetadata } from 'next';
+import { generateSeoMetaTags } from '@/ai/flows/generate-seo-meta-flow';
+import { HomeExploreSection } from '@/components/home-explore-section'; 
 
 const allExploreSections = [
-  { title: 'Parasnath Hill', href: '/parasnath-hill', image: 'https://cdn.pixabay.com/photo/2018/08/19/10/16/nature-3616194_1280.jpg', dataAiHint: 'mountain pilgrimage', description: 'Sacred Jain pilgrimage site and Jharkhand\'s highest peak.' },
-  { title: 'Forests & Wildlife', href: '/forests-wildlife', image: 'https://cdn.pixabay.com/photo/2022/08/18/06/57/monkey-7394077_1280.jpg', dataAiHint: 'dense forest animals', description: 'Explore the rich biodiversity and green landscapes.' },
-  { title: 'Culture & Festivals', href: '/culture-festivals', image: 'https://cdn.pixabay.com/photo/2021/01/08/17/02/old-man-5900410_1280.jpg', dataAiHint: 'indian festival tribal', description: 'Discover local traditions, music, dance, and celebrations.' },
-  { title: 'History & Heritage', href: '/history-heritage', image: 'https://cdn.pixabay.com/photo/2016/12/18/15/28/hazara-rama-temple-1915985_1280.jpg', dataAiHint: 'old monument ruins', description: 'Uncover the stories and landmarks of Giridih\'s past.' },
-  { title: 'Local Economy & Crafts', href: '/local-economy-crafts', image: 'https://cdn.pixabay.com/photo/2023/05/29/18/10/pottery-8026823_1280.jpg', dataAiHint: 'handicraft market india', description: 'Learn about mining, agriculture, and traditional crafts.' },
-  { title: 'Tourism Guide', href: '/tourism-guide', image: 'https://cdn.pixabay.com/photo/2019/12/05/10/01/forest-4674703_1280.jpg', dataAiHint: 'travel guide map', description: 'Plan your visit: attractions, stays, food, and tips.' },
+  { title: 'Parasnath Hill', href: '/parasnath-hill', image: 'https://cdn.pixabay.com/photo/2018/08/19/10/16/nature-3616194_1280.jpg', dataAiHint: 'mountain pilgrimage jain', description: 'Sacred Jain pilgrimage site and Jharkhand\'s highest peak.' },
+  { title: 'Forests & Wildlife', href: '/forests-wildlife', image: 'https://cdn.pixabay.com/photo/2022/08/18/06/57/monkey-7394077_1280.jpg', dataAiHint: 'dense forest animals india', description: 'Explore the rich biodiversity and green landscapes.' },
+  { title: 'Culture & Festivals', href: '/culture-festivals', image: 'https://cdn.pixabay.com/photo/2021/01/08/17/02/old-man-5900410_1280.jpg', dataAiHint: 'indian festival tribal dance', description: 'Discover local traditions, music, dance, and celebrations.' },
+  { title: 'History & Heritage', href: '/history-heritage', image: 'https://cdn.pixabay.com/photo/2016/12/18/15/28/hazara-rama-temple-1915985_1280.jpg', dataAiHint: 'old monument ruins india', description: 'Uncover the stories and landmarks of Giridih\'s past.' },
+  { title: 'Local Economy & Crafts', href: '/local-economy-crafts', image: 'https://cdn.pixabay.com/photo/2023/05/29/18/10/pottery-8026823_1280.jpg', dataAiHint: 'handicraft market india pottery', description: 'Learn about mining, agriculture, and traditional crafts.' },
+  { title: 'Tourism Guide', href: '/tourism-guide', image: 'https://cdn.pixabay.com/photo/2019/12/05/10/01/forest-4674703_1280.jpg', dataAiHint: 'travel guide map compass', description: 'Plan your visit: attractions, stays, food, and tips.' },
   { title: 'People & Lifestyle', href: '/people-lifestyle', image: 'https://cdn.pixabay.com/photo/2017/08/29/12/07/adult-2693054_1280.jpg', dataAiHint: 'indian village people community', description: 'Understand the communities and daily life in Giridih.' },
-   { href: '/gallery', label: 'Gallery', icon: GalleryHorizontalEnd, image: 'https://cdn.pixabay.com/photo/2017/08/06/09/29/man-2590655_1280.jpg', dataAiHint: 'photo gallery collection images', description: 'Visual glimpses of Giridih.' }, // Added Gallery explicitly
-  { title: 'Blogs & Stories', href: '/blogs', image: 'https://cdn.pixabay.com/photo/2019/05/14/21/50/storytelling-4203628_1280.jpg', dataAiHint: 'writing storytelling journal india', description: 'Read experiences and tales from Giridih.', icon: BookOpen }, // Added Blogs section
-   { href: '/forums', label: 'Forums', icon: MessageSquare, image: 'https://cdn.pixabay.com/photo/2016/08/16/09/53/international-conference-1597531_1280.jpg', dataAiHint: 'community discussion forum people', description: 'Connect and discuss with the community.' }, // Added Forums explicitly
+  { title: 'Gallery', href: '/gallery', image: 'https://cdn.pixabay.com/photo/2017/08/06/09/29/man-2590655_1280.jpg', dataAiHint: 'photo gallery collection images', description: 'Visual glimpses of Giridih.', label: 'Gallery', iconName: 'GalleryHorizontalEnd' },
+  { title: 'Blogs & Stories', href: '/blogs', image: 'https://cdn.pixabay.com/photo/2019/05/14/21/50/storytelling-4203628_1280.jpg', dataAiHint: 'writing storytelling journal india', description: 'Read experiences and tales from Giridih.', iconName: 'BookOpen' },
+  { title: 'Forums', href: '/forums', image: 'https://cdn.pixabay.com/photo/2016/08/16/09/53/international-conference-1597531_1280.jpg', dataAiHint: 'community discussion forum people', description: 'Connect and discuss with the community.', label: 'Forums', iconName: 'MessageSquare' },
 ];
 
 
@@ -28,7 +26,7 @@ const keyStats = [
     { label: 'Area', value: '4853.56 Sq.Km', icon: MapPin },
     { label: 'Population', value: '24,45,774', icon: Users },
     { label: 'Male', value: '12,58,098', icon: User },
-    { label: 'Female', value: '11,87,376', icon: User }, // Could use a specific female icon if available/needed
+    { label: 'Female', value: '11,87,376', icon: User },
     { label: 'Language', value: 'Hindi', icon: Languages },
     { label: 'Villages', value: '2,772', icon: Milestone },
 ];
@@ -37,7 +35,7 @@ const adminStats = [
     { label: 'Sub Divisions', value: '4', icon: Pyramid },
     { label: 'Blocks', value: '13', icon: LayoutGrid },
     { label: 'Panchayats', value: '358', icon: Building2 },
-]
+];
 
 const subdivisions = [
     'Giridih subdivision',
@@ -51,48 +49,138 @@ const blocks = [
     'Gawan', 'Giridih', 'Jamua', 'Pirtand', 'Sariya', 'Tisri',
 ];
 
+const pageTitle = "Giridih Explorer - Your Guide to Giridih District";
+const pageContentSummary = "Discover Giridih: Explore Parasnath Hill, forests, wildlife, culture, history, local crafts, and plan your trip with our comprehensive tourism guide for Giridih District, Jharkhand, India.";
+const contentType = 'website homepage';
 
-export default function Home() {
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const [filteredSections, setFilteredSections] = React.useState(allExploreSections);
+export async function generateMetadata(
+  parentResolvingMetadata: ResolvingMetadata
+): Promise<Metadata> {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://giridih.example.com';
+  const canonicalUrl = `${siteUrl}/`;
+  const heroImageUrl = `${siteUrl}/og-image.png`; 
+  const previousImages = (await parentResolvingMetadata).openGraph?.images || [];
 
-  React.useEffect(() => {
-    if (searchQuery === '') {
-      setFilteredSections(allExploreSections);
-    } else {
-      const lowerCaseQuery = searchQuery.toLowerCase();
-      const filtered = allExploreSections.filter(section =>
-        (section.title?.toLowerCase() || section.label?.toLowerCase() || '').includes(lowerCaseQuery) ||
-        section.description.toLowerCase().includes(lowerCaseQuery) ||
-        section.dataAiHint.toLowerCase().includes(lowerCaseQuery)
-      );
-      setFilteredSections(filtered);
+  try {
+    const seoInput = {
+      title: pageTitle,
+      contentSummary: pageContentSummary,
+      contentType: contentType,
+    };
+    const seoData = await generateSeoMetaTags(seoInput);
+
+    return {
+      title: seoData.seoTitle,
+      description: seoData.metaDescription,
+      keywords: seoData.keywords || ['Giridih', 'Jharkhand', 'tourism', 'Parasnath Hill', 'Shikharji', 'travel guide', 'India tourism'],
+      alternates: {
+        canonical: canonicalUrl,
+      },
+      openGraph: {
+        title: seoData.seoTitle,
+        description: seoData.metaDescription,
+        url: canonicalUrl,
+        siteName: 'Giridih Explorer',
+        images: [
+          {
+            url: heroImageUrl,
+            width: 1200,
+            height: 630,
+            alt: 'Giridih Explorer - Scenic view of Giridih',
+          },
+          ...previousImages,
+        ],
+        type: 'website',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: seoData.seoTitle,
+        description: seoData.metaDescription,
+        images: [heroImageUrl],
+      },
+    };
+  } catch (error) {
+    let errorMessage = 'Unknown error during SEO metadata generation';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    } else if (error && typeof error === 'object' && 'toString' in error) {
+      errorMessage = error.toString();
     }
-  }, [searchQuery]);
+    console.error(`AI SEO Metadata Generation Error for ${pageTitle}: ${errorMessage}`, error);
+    return {
+      title: pageTitle,
+      description: pageContentSummary,
+      alternates: { canonical: canonicalUrl },
+      openGraph: {
+        title: pageTitle,
+        description: pageContentSummary,
+        url: canonicalUrl,
+        images: [heroImageUrl],
+      },
+    };
+  }
+}
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
+export default function HomePage() {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://giridih.example.com';
+  const canonicalUrl = `${siteUrl}/`;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "url": canonicalUrl,
+    "name": "Giridih Explorer",
+    "description": "Your comprehensive guide to exploring Giridih District, Jharkhand. Discover attractions, culture, nature, and plan your perfect trip.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": `${siteUrl}/explore?q={search_term_string}`
+      },
+      "query-input": "required name=search_term_string"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Giridih Explorer",
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${siteUrl}/logo.png`,
+        "width": 200,
+        "height": 60,
+        "dataAiHint": "site logo"
+      }
+    }
   };
+
+  const serializableExploreSections = allExploreSections.map(section => ({
+    title: section.title,
+    label: section.label,
+    href: section.href,
+    image: section.image,
+    dataAiHint: section.dataAiHint,
+    description: section.description,
+  }));
 
 
   return (
     <div className="space-y-12">
-      {/* Modernized Hero Section - Added background image and overlay */}
-      <section className="relative overflow-hidden py-16 md:py-24 lg:py-32 rounded-lg shadow-inner bg-cover bg-center" style={{ backgroundImage: "url('https://cdn.pixabay.com/photo/2018/08/12/15/29/hintersee-3601004_1280.jpg')" }} data-ai-hint="landscape mountain travel india">
-        {/* Overlay for text readability */}
-        <div className="absolute inset-0 bg-black/50 z-0"></div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
-        {/* Content container */}
+      <section className="relative overflow-hidden py-16 md:py-24 lg:py-32 rounded-lg shadow-inner bg-cover bg-center" style={{ backgroundImage: "url('https://cdn.pixabay.com/photo/2018/08/12/15/29/hintersee-3601004_1280.jpg')" }} data-ai-hint="landscape mountain travel india background">
+        <div className="absolute inset-0 bg-black/50 z-0"></div>
         <div className="container text-center relative z-10">
-           {/* Text Content & CTA */}
            <div className="space-y-6 max-w-2xl mx-auto">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white"> {/* Changed text color to white */}
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white">
                   Explore <span className="text-primary">Giridih</span>
                 </h1>
-                <p className="text-lg md:text-xl text-white/90"> {/* Changed text color to light white */}
+                <p className="text-lg md:text-xl text-white/90">
                    Discover the natural beauty, rich culture, and vibrant life of Jharkhand's hidden gem. Your journey starts here.
                 </p>
-                 {/* Only the Browse Attractions button, centered */}
                  <div className="flex justify-center">
                    <Button size="lg" asChild variant="default" className="shadow-lg hover:shadow-primary/30 transition-shadow">
                      <Link href="/explore">
@@ -104,7 +192,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Introduction */}
       <section className="text-center max-w-4xl mx-auto">
         <h2 className="text-3xl font-semibold mb-4">Welcome to Giridih Explorer</h2>
         <p className="text-muted-foreground leading-relaxed">
@@ -112,12 +199,9 @@ export default function Home() {
         </p>
       </section>
 
-
-       {/* About Giridih Section */}
       <section className="max-w-6xl mx-auto space-y-8">
         <h2 className="text-3xl font-semibold text-center flex items-center justify-center gap-2"><Info className="text-primary"/> About Giridih District</h2>
          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Description */}
             <div className="lg:col-span-3">
                  <Card className="shadow-md h-full">
                      <CardHeader>
@@ -137,7 +221,6 @@ export default function Home() {
                  </Card>
             </div>
 
-             {/* Key Statistics */}
              <div className="space-y-4">
                  <Card className="shadow-md">
                     <CardHeader>
@@ -155,7 +238,6 @@ export default function Home() {
                  </Card>
             </div>
 
-             {/* Admin Stats */}
              <div className="space-y-4">
                  <Card className="shadow-md">
                     <CardHeader>
@@ -169,11 +251,15 @@ export default function Home() {
                                <span className="text-muted-foreground ml-auto">{stat.value}</span>
                            </div>
                         ))}
+                         <div className="flex items-center gap-3 text-sm bg-muted/50 p-2 rounded">
+                            <HomeIcon className="h-5 w-5 text-secondary shrink-0" />
+                            <span className="font-medium">Villages:</span>
+                            <span className="text-muted-foreground ml-auto">2772</span>
+                        </div>
                     </CardContent>
                  </Card>
             </div>
 
-             {/* Subdivisions */}
             <div>
                  <Card className="shadow-md h-full">
                      <CardHeader>
@@ -189,7 +275,6 @@ export default function Home() {
                  </Card>
             </div>
 
-             {/* Blocks */}
             <div className="lg:col-span-2">
                  <Card className="shadow-md h-full">
                      <CardHeader>
@@ -207,64 +292,9 @@ export default function Home() {
         </div>
       </section>
 
-
-       {/* Search/Explore Section */}
-       <section className="max-w-2xl mx-auto">
-        <h3 className="text-2xl font-semibold mb-4 text-center">Search & Explore</h3>
-         <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input
-              placeholder="Search for places, topics, or activities..."
-              className="pl-10"
-              value={searchQuery}
-              onChange={handleSearchChange}
-            />
-          </div>
-          <p className="text-center text-sm text-muted-foreground mt-2">
-            {searchQuery ? `${filteredSections.length} results found.` : 'Or browse popular sections below.'}
-          </p>
-      </section>
-
-
-      {/* Explore Grid */}
-      <section>
-         <h3 className="text-2xl font-semibold mb-6 text-center">Discover More</h3>
-         {filteredSections.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredSections.map((section) => (
-                <Card key={section.href} className="overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col">
-                  {/* Ensure href is always a string */}
-                  <Link href={section.href || '#'} className="block flex flex-col flex-grow">
-                    <div className="relative h-48 w-full">
-                      <Image
-                        src={section.image}
-                         alt={section.title || section.label || ''} // Provide a default alt text
-                        layout="fill"
-                        objectFit="cover"
-                        data-ai-hint={section.dataAiHint}
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        className="transition-transform duration-300 group-hover:scale-105" // Added hover effect
-                      />
-                       <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-70 group-hover:opacity-50 transition-opacity duration-300"></div> {/* Added gradient */}
-                    </div>
-                    <CardHeader>
-                       <CardTitle className="text-xl group-hover:text-primary transition-colors">{section.title || section.label}</CardTitle> {/* Use title or label */}
-                    </CardHeader>
-                    <CardContent className="flex-grow">
-                       <p className="text-sm text-muted-foreground mb-3 line-clamp-3">{section.description}</p> {/* Line clamp description */}
-                       <Button variant="link" className="p-0 text-primary mt-auto">
-                        Explore Now <ArrowRight className="ml-1 h-4 w-4" />
-                       </Button>
-                    </CardContent>
-                  </Link>
-                </Card>
-              ))}
-            </div>
-         ) : (
-            <p className="text-center text-muted-foreground">No sections match your search.</p>
-         )}
-      </section>
+      <HomeExploreSection allExploreSectionsData={serializableExploreSections} />
     </div>
   );
 }
 
+    
